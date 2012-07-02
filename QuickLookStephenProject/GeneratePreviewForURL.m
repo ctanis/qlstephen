@@ -45,14 +45,13 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
         encodingUsed = NSISOLatin1StringEncoding;
     }
     
-    if ([text length] < MAX_PREVIEW_SIZE)
-    {
+
     QLPreviewRequestSetDataRepresentation(
                                           preview,
                                           (CFDataRef)[text dataUsingEncoding:encodingUsed],
                                           kUTTypePlainText,
                                           (CFDictionaryRef)props);
-    }
+
     
     [pool release];
     
