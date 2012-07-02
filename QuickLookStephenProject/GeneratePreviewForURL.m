@@ -3,6 +3,8 @@
 #include <QuickLook/QuickLook.h>
 #import <Foundation/Foundation.h>
 
+#define MAX_PREVIEW_SIZE 100000
+
 // Generate a preview for the document with the given url
 OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview, 
                                CFURLRef url, CFStringRef contentTypeUTI, CFDictionaryRef options)
@@ -18,6 +20,18 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
     [props setObject:[NSNumber numberWithInt:800] forKey:(NSString *)kQLPreviewPropertyHeightKey];
     
     NSStringEncoding encodingUsed;
+    
+    // make sure the file is not too big first..;
+    NSFileManager *man = [[NSFileManager alloc] init];
+    NSDictionary *attrs = [man attributesOfItemAtPath: [(NSURL*)url path] error: NULL];
+    
+    if ([attrs fileSize] > MAX_PREVIEW_SIZE)
+    {
+        [pool release];
+        return noErr;        
+    }
+   
+    
     NSString *text = [NSString stringWithContentsOfURL:(NSURL *)url
                                           usedEncoding:&encodingUsed 
                                                  error:nil];
@@ -31,12 +45,14 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
         encodingUsed = NSISOLatin1StringEncoding;
     }
     
+    if ([text length] < MAX_PREVIEW_SIZE)
+    {
     QLPreviewRequestSetDataRepresentation(
                                           preview,
                                           (CFDataRef)[text dataUsingEncoding:encodingUsed],
                                           kUTTypePlainText,
                                           (CFDictionaryRef)props);
-    
+    }
     
     [pool release];
     
